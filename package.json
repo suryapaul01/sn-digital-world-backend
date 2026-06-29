@@ -1,0 +1,12 @@
+{
+  "name": "sn-digital-world-backend",
+  "version": "1.0.0",
+  "description": "SN DIGITAL WORLD backend for license validation",
+  "main": "api/validate.js",
+  "scripts": {
+    "generate": "node scripts/generate.js"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  }
+}

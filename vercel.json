@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/functions/v1/validate-license",
+      "destination": "/api/validate.js"
+    },
+    {
+      "source": "/functions/v1/(.*)",
+      "destination": "/api/proxy.js?path=functions/v1/$1"
+    },
+    {
+      "source": "/rest/v1/(.*)",
+      "destination": "/api/proxy.js?path=rest/v1/$1"
+    },
+    {
+      "source": "/api/admin/list",
+      "destination": "/api/admin/list.js"
+    },
+    {
+      "source": "/api/admin/revoke",
+      "destination": "/api/admin/revoke.js"
+    },
+    {
+      "source": "/api/admin/decrypt",
+      "destination": "/api/admin/decrypt.js"
+    },
+    {
+      "source": "/admin.html",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ]
+}

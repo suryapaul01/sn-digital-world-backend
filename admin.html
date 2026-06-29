@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SN DIGITAL WORLD ADMIN CONSOLE</title>
+  <!-- Google Fonts Space Grotesk & DM Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #eef5f9;
+      --paper-2: #d8e5f0;
+      --ink: #1a566e;
+      --ink-deep: #0a3a4f;
+      --success: #10b981;
+      --success-bg: #e6f7f0;
+      --warning: #f59e0b;
+      --warning-bg: #fef8eb;
+      --error: #ef4444;
+      --error-bg: #fdf2f2;
+      --font-display: 'Space Grotesk', -apple-system, sans-serif;
+      --font-body: 'DM Sans', -apple-system, sans-serif;
+      --shadow: 8px 8px 0 var(--ink-deep);
+      --shadow-lg: 12px 12px 0 var(--ink-deep);
+      --shadow-sm: 4px 4px 0 var(--ink-deep);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 80px;
+    }
+
+    /* Container */
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      padding: 0 24px;
+    }
+
+    /* Top Sticky-like Header */
+    .header-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 0;
+      border-bottom: 2px solid var(--ink);
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo svg {
+      color: var(--ink-deep);
+      border: 2px solid var(--ink);
+      padding: 6px;
+      background: var(--paper-2);
+      border-radius: 4px;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      color: var(--ink-deep);
+    }
+
+    .admin-auth-box {
+      display: flex;
+      align-items: center;
+      background: var(--paper-2);
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      padding: 6px 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .admin-auth-box label {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-right: 2px solid var(--ink);
+      padding-right: 12px;
+      margin-right: 12px;
+      color: var(--ink);
+    }
+
+    .admin-auth-box input {
+      background: transparent;
+      border: none;
+      color: var(--ink-deep);
+      outline: none;
+      font-size: 14px;
+      font-weight: 700;
+      width: 180px;
+      letter-spacing: 2px;
+    }
+
+    .admin-auth-box input::placeholder {
+      letter-spacing: 0px;
+      font-weight: 500;
+      color: var(--ink);
+      opacity: 0.6;
+    }
+
+    /* Tabs Brutalist style */
+    .tabs-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 2px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-btn {
+      padding: 12px 24px;
+      background: transparent;
+      border: 2px solid transparent;
+      border-bottom: none;
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 4px 4px 0 0;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--ink-deep);
+      background: var(--paper-2);
+    }
+
+    .tab-btn.active {
+      background: var(--paper-2);
+      border-color: var(--ink);
+      color: var(--ink-deep);
+      position: relative;
+      top: 2px;
+      box-shadow: inset 0 3px 0 var(--ink-deep);
+    }
+
+    /* Brutalist Dashboard Layout */
+    .tab-section {
+      display: none;
+      background: var(--paper-2);
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      padding: 40px;
+      box-shadow: var(--shadow);
+      margin-bottom: 48px;
+    }
+
+    .tab-section.active {
+      display: block;
+    }
+
+    /* Forms */
+    .field-group {
+      margin-bottom: 28px;
+    }
+
+    .field-group label {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      color: var(--ink-deep);
+    }
+
+    input[type="text"], input[type="password"], select {
+      width: 100%;
+      padding: 14px 16px;
+      background-color: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      color: var(--ink-deep);
+      font-size: 15px;
+      font-weight: 500;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    input[type="text"]:focus, select:focus {
+      background-color: var(--paper);
+      border-color: var(--ink-deep);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Brutalist Buttons */
+    .action-btn {
+      width: 100%;
+      padding: 16px;
+      background-color: var(--ink-deep);
+      color: var(--paper);
+      border: 2px solid var(--ink-deep);
+      border-radius: 4px;
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      transition: opacity 0.2s, background-color 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .action-btn:hover {
+      background-color: var(--ink);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .action-btn-secondary {
+      background-color: transparent;
+      color: var(--ink-deep);
+      border-color: var(--ink);
+    }
+
+    .action-btn-secondary:hover {
+      background-color: var(--ink-deep);
+      color: var(--paper);
+      border-color: var(--ink-deep);
+    }
+
+    .action-btn-danger {
+      background-color: #b91c1c;
+      color: var(--paper);
+      border-color: #b91c1c;
+    }
+
+    .action-btn-danger:hover {
+      background-color: #991b1b;
+      border-color: #991b1b;
+    }
+
+    /* Result Panel */
+    .key-output-panel {
+      margin-top: 36px;
+      padding: 24px;
+      background: var(--paper);
+      border: 2px dashed var(--ink);
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .key-display-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .license-string {
+      flex: 1;
+      font-family: monospace;
+      font-weight: 700;
+      color: var(--ink-deep);
+      background: var(--paper-2);
+      padding: 14px 18px;
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      font-size: 15px;
+      word-break: break-all;
+      user-select: all;
+    }
+
+    .copy-action-btn {
+      background: var(--paper-2);
+      border: 2px solid var(--ink);
+      color: var(--ink-deep);
+      padding: 14px 20px;
+      border-radius: 4px;
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .copy-action-btn:hover {
+      background: var(--ink-deep);
+      color: var(--paper);
+      border-color: var(--ink-deep);
+    }
+
+    /* Notification Banner */
+    .notification-banner {
+      padding: 16px 20px;
+      border-radius: 4px;
+      border: 2px solid var(--ink);
+      font-size: 14.5px;
+      font-weight: 500;
+      margin-bottom: 32px;
+      display: none;
+      line-height: 1.5;
+    }
+
+    .notification-banner.success {
+      display: block;
+      background-color: var(--success-bg);
+      color: var(--ink-deep);
+      border-color: var(--ink);
+    }
+
+    .notification-banner.error {
+      display: block;
+      background-color: var(--error-bg);
+      color: var(--ink-deep);
+      border-color: var(--ink);
+    }
+
+    /* Dashboard Metrics */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    .metric-item {
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .metric-title {
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--ink);
+      opacity: 0.8;
+      margin-bottom: 8px;
+    }
+
+    .metric-number {
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--ink-deep);
+      line-height: 1;
+    }
+
+    /* Stark Brutalist Table */
+    .table-frame {
+      width: 100%;
+      overflow-x: auto;
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      background: var(--paper);
+      box-shadow: var(--shadow-sm);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14.5px;
+    }
+
+    th, td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    th {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      background: var(--paper-2);
+      color: var(--ink-deep);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: var(--paper-2);
+    }
+
+    /* Key Wrapper with eye toggle */
+    .key-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .key-text {
+      font-family: monospace;
+      font-size: 13.5px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .eye-toggle-btn {
+      background: transparent;
+      border: none;
+      padding: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink);
+      transition: color 0.15s;
+    }
+
+    .eye-toggle-btn:hover {
+      color: var(--ink-deep);
+    }
+
+    /* Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.75px;
+    }
+
+    .status-badge.active {
+      background-color: var(--success-bg);
+      color: var(--ink-deep);
+    }
+
+    .status-badge.expired {
+      background-color: var(--warning-bg);
+      color: var(--ink-deep);
+    }
+
+    .status-badge.revoked {
+      background-color: var(--error-bg);
+      color: var(--ink-deep);
+    }
+
+    /* Table Actions */
+    .row-action-btn {
+      background: transparent;
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.75px;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--ink-deep);
+    }
+
+    .row-action-btn:hover {
+      background: var(--ink-deep);
+      color: var(--paper);
+    }
+
+    .row-action-revoke {
+      border-color: var(--ink);
+      color: var(--ink-deep);
+    }
+
+    .row-action-revoke:hover {
+      background: #b91c1c;
+      border-color: #b91c1c;
+      color: var(--paper);
+    }
+
+    .row-action-reset {
+      border-color: var(--ink);
+      color: var(--ink-deep);
+    }
+
+    .row-action-reset:hover {
+      background: var(--ink-deep);
+      border-color: var(--ink-deep);
+      color: var(--paper);
+    }
+
+    .table-empty-row {
+      text-align: center;
+      padding: 48px 0;
+      color: var(--ink);
+      opacity: 0.8;
+      font-weight: 500;
+    }
+
+    /* Inspect metadata details */
+    .inspect-details-box {
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      padding: 24px;
+      margin-top: 28px;
+      display: none;
+    }
+
+    .inspect-details-box h3 {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+
+    .inspect-grid {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+      font-size: 14.5px;
+    }
+
+    .inspect-label {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ink);
+    }
+
+    .inspect-value {
+      font-family: monospace;
+      font-weight: 700;
+      word-break: break-all;
+    }
+
+    /* Confirm Modal - Brutalist Style */
+    .dialog-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(45, 45, 45, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .dialog-box {
+      background: var(--paper-2);
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      padding: 32px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+      position: relative;
+    }
+
+    .dialog-icon-wrapper {
+      width: 56px;
+      height: 56px;
+      border: 2px solid var(--ink);
+      background: var(--paper);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      color: #b91c1c;
+    }
+
+    .dialog-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      color: var(--ink-deep);
+    }
+
+    .dialog-desc {
+      font-size: 14px;
+      color: var(--ink);
+      line-height: 1.55;
+      margin-bottom: 24px;
+    }
+
+    .dialog-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .dialog-actions button {
+      flex: 1;
+    }
+
+    /* Skeleton Loader */
+    .skeleton-line {
+      height: 24px;
+      background: linear-gradient(90deg, var(--paper) 25%, var(--paper-2) 50%, var(--paper) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s infinite;
+      border-radius: 4px;
+      border: 1px solid var(--ink);
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Responsive tables */
+    @media (max-width: 768px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .header-bar {
+        flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 32px;
+      }
+      .admin-auth-box {
+        justify-content: space-between;
+      }
+      .admin-auth-box input {
+        width: 100%;
+        text-align: right;
+      }
+      .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .tab-section {
+        padding: 24px 16px;
+      }
+
+      /* Desktop table turns into cards on mobile */
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead {
+        display: none;
+      }
+      tr {
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        margin-bottom: 16px;
+        background: var(--paper);
+        padding: 16px;
+        box-shadow: var(--shadow-sm);
+      }
+      td {
+        border: none;
+        padding: 8px 0;
+        position: relative;
+        padding-left: 45%;
+        text-align: left;
+        word-break: break-all;
+      }
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 40%;
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--ink);
+        opacity: 0.8;
+      }
+      td:last-child {
+        text-align: right;
+        padding-left: 0;
+        border-top: 2px solid var(--ink);
+        margin-top: 10px;
+        padding-top: 14px;
+      }
+      .dialog-actions {
+        flex-direction: column-reverse;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header-bar">
+    <div class="brand-logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+      <span class="brand-title">SN DIGITAL WORLD Admin</span>
+    </div>
+    <div class="admin-auth-box">
+      <label>Admin Key</label>
+      <input type="password" id="adminPassword" placeholder="Enter Password..." onchange="savePassword(this.value)">
+    </div>
+  </div>
+
+  <div class="tabs-row">
+    <button class="tab-btn active" onclick="switchTab('generate')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Generate
+    </button>
+    <button class="tab-btn" onclick="switchTab('active-keys'); loadActiveLicenses();">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+      Registrations
+    </button>
+    <button class="tab-btn" onclick="switchTab('inspect')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      Inspect
+    </button>
+  </div>
+
+  <!-- Section: Generate -->
+  <div id="tab-generate" class="tab-section active">
+    <div id="gen-banner" class="notification-banner"></div>
+    
+    <div class="field-group">
+      <label>Customer Name</label>
+      <input type="text" id="userName" placeholder="e.g. John Doe (email/username)">
+    </div>
+
+    <div class="field-group">
+      <label>Duration / Expiration</label>
+      <select id="timeLimit">
+        <option value="5m">5 Minutes (Testing)</option>
+        <option value="10m">10 Minutes (Testing)</option>
+        <option value="4h">4 Hours</option>
+        <option value="24h">24 Hours</option>
+        <option value="7d">7 Days</option>
+        <option value="30d">30 Days</option>
+        <option value="1M" selected>1 Month (30 Days)</option>
+        <option value="2M">2 Months (60 Days)</option>
+        <option value="3M">3 Months (90 Days)</option>
+        <option value="365d">1 Year (Annual)</option>
+        <option value="lifetime">Lifetime (Never Expires)</option>
+      </select>
+    </div>
+
+    <button class="action-btn" id="generateBtn" onclick="generateKey()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+      </svg>
+      Generate License Key
+    </button>
+
+    <div id="result-container" class="key-output-panel" style="display: none;">
+      <label>Generated Key</label>
+      <div class="key-display-row">
+        <div class="license-string" id="licenseKey"></div>
+        <button class="copy-action-btn" id="copyBtn" onclick="copyKey()">Copy</button>
+      </div>
+      <label id="expiresAtLabel" style="font-size: 13px; text-transform: none; color: var(--ink); opacity: 0.8;"></label>
+    </div>
+  </div>
+
+  <!-- Section: Active registrations -->
+  <div id="tab-active-keys" class="tab-section">
+    <div id="active-banner" class="notification-banner"></div>
+    
+    <!-- Metrics -->
+    <div class="metrics-grid">
+      <div class="metric-item">
+        <div class="metric-title">Total Keys</div>
+        <div class="metric-number" id="stat-total">0</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-title" style="color:var(--success)">Active</div>
+        <div class="metric-number" id="stat-active">0</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-title" style="color:var(--warning)">Expired</div>
+        <div class="metric-number" id="stat-expired">0</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-title" style="color:var(--error)">Banned</div>
+        <div class="metric-number" id="stat-revoked">0</div>
+      </div>
+    </div>
+
+    <div class="table-frame">
+      <table id="licensesTable">
+        <thead>
+          <tr>
+            <th>User / Owner</th>
+            <th>License Key</th>
+            <th>Bound Device ID</th>
+            <th>Status / Expiry</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="licensesList">
+          <tr>
+            <td colspan="5" class="table-empty-row">Loading database...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section: Inspect Key -->
+  <div id="tab-inspect" class="tab-section">
+    <div id="inspect-banner" class="notification-banner"></div>
+    <div class="field-group">
+      <label>Paste License Key</label>
+      <input type="text" id="inspectKeyInput" placeholder="SND-...">
+    </div>
+    <button class="action-btn action-btn-secondary" onclick="inspectKey()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+      </svg>
+      Inspect & Verify Key
+    </button>
+
+    <div id="inspect-box" class="inspect-details-box">
+      <h3>Decoded Key Metadata</h3>
+      <div class="inspect-grid">
+        <div class="inspect-label">User / Owner:</div>
+        <div class="inspect-value" id="ins-user">-</div>
+        
+        <div class="inspect-label">Duration:</div>
+        <div class="inspect-value" id="ins-duration">-</div>
+        
+        <div class="inspect-label">Integrity Status:</div>
+        <div class="inspect-value" id="ins-status">-</div>
+        
+        <div class="inspect-label">Integrity Info:</div>
+        <div class="inspect-value" id="ins-details">-</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirm -->
+<div id="confirmModal" class="dialog-overlay">
+  <div class="dialog-box">
+    <div class="dialog-icon-wrapper">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        <line x1="10" y1="11" x2="10" y2="17"></line>
+        <line x1="14" y1="11" x2="14" y2="17"></line>
+      </svg>
+    </div>
+    <div class="dialog-title">Revoke License Access</div>
+    <div class="dialog-desc">
+      Are you sure you want to ban this license key? This blocks future validation requests and logs the user out immediately.
+    </div>
+    <div class="dialog-actions">
+      <button id="modalCancel" class="action-btn action-btn-secondary">Cancel</button>
+      <button id="modalConfirm" class="action-btn action-btn-danger">Confirm Ban</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let pendingRevokeKey = null;
+
+  window.onload = function() {
+    const saved = sessionStorage.getItem('ql_admin_pw');
+    if (saved) {
+      document.getElementById('adminPassword').value = saved;
+    }
+  };
+
+  function savePassword(val) {
+    sessionStorage.setItem('ql_admin_pw', val);
+  }
+
+  function getPassword() {
+    return document.getElementById('adminPassword').value.trim();
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-section').forEach(c => c.classList.remove('active'));
+    
+    event.currentTarget.classList.add('active');
+    document.getElementById('tab-' + tabId).classList.add('active');
+  }
+
+  function showBanner(bannerId, type, msg) {
+    const banner = document.getElementById(bannerId);
+    banner.className = 'notification-banner ' + type;
+    banner.textContent = msg;
+    banner.style.display = 'block';
+  }
+
+  function clearBanner(bannerId) {
+    const banner = document.getElementById(bannerId);
+    if (banner) banner.style.display = 'none';
+  }
+
+  async function generateKey() {
+    const password = getPassword();
+    const name = document.getElementById('userName').value.trim();
+    const limit = document.getElementById('timeLimit').value;
+    const btn = document.getElementById('generateBtn');
+    const resultBox = document.getElementById('result-container');
+    
+    clearBanner('gen-banner');
+    
+    if (!password) {
+      showBanner('gen-banner', 'error', 'Please enter your Admin Key.');
+      return;
+    }
+    if (!name) {
+      showBanner('gen-banner', 'error', 'Customer Name is required.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite;">
+        <line x1="12" y1="2" x2="12" y2="6"></line>
+        <line x1="12" y1="18" x2="12" y2="22"></line>
+        <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+        <line x1="2" y1="12" x2="6" y2="12"></line>
+        <line x1="18" y1="12" x2="22" y2="12"></line>
+        <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+      </svg>
+      Generating...
+    `;
+    resultBox.style.display = 'none';
+
+    try {
+      const response = await fetch('/api/admin/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          admin_password: password,
+          user_name: name,
+          time_limit: limit
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showBanner('gen-banner', 'success', 'Key generated successfully!');
+        document.getElementById('licenseKey').textContent = data.license_key;
+        document.getElementById('expiresAtLabel').textContent = 'Expiry details: ' + data.expires_at;
+        resultBox.style.display = 'flex';
+      } else {
+        showBanner('gen-banner', 'error', data.message || 'Generation failed.');
+      }
+    } catch (err) {
+      showBanner('gen-banner', 'error', 'Network error. Please try again.');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+        Generate License Key
+      `;
+    }
+  }
+
+  function copyKey() {
+    const key = document.getElementById('licenseKey').textContent;
+    navigator.clipboard.writeText(key).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied!';
+      btn.style.color = 'var(--success)';
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.style.color = 'var(--ink-deep)';
+      }, 2000);
+    });
+  }
+
+  function toggleKeyVisibility(btn) {
+    const wrapper = btn.closest('.key-wrapper');
+    const textEl = wrapper.querySelector('.key-text');
+    const iconShow = btn.querySelector('.eye-icon-show');
+    const iconHide = btn.querySelector('.eye-icon-hide');
+    
+    if (textEl.textContent === textEl.dataset.masked) {
+      textEl.textContent = textEl.dataset.full;
+      iconShow.style.display = 'none';
+      iconHide.style.display = 'inline';
+    } else {
+      textEl.textContent = textEl.dataset.masked;
+      iconShow.style.display = 'inline';
+      iconHide.style.display = 'none';
+    }
+  }
+
+  async function loadActiveLicenses() {
+    const password = getPassword();
+    const list = document.getElementById('licensesList');
+    
+    clearBanner('active-banner');
+    
+    list.innerHTML = Array(3).fill(0).map(() => `
+      <tr>
+        <td colspan="5"><div class="skeleton-line"></div></td>
+      </tr>
+    `).join('');
+    
+    if (!password) {
+      list.innerHTML = '<tr><td colspan="5" class="table-empty-row">Provide your Admin Key in the top-right lock to view registrations.</td></tr>';
+      updateStats(0, 0, 0, 0);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ admin_password: password })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        if (!data.licenses || data.licenses.length === 0) {
+          list.innerHTML = '<tr><td colspan="5" class="table-empty-row">No active activations found.</td></tr>';
+          updateStats(0, 0, 0, 0);
+          return;
+        }
+
+        let total = data.licenses.length;
+        let active = 0;
+        let expired = 0;
+        let revoked = 0;
+
+        list.innerHTML = data.licenses.map(lic => {
+          let badgeClass = 'active';
+          let badgeText = 'Active';
+          let actionButton = '';
+
+          if (lic.status === 'revoked') {
+            revoked++;
+            badgeClass = 'revoked';
+            badgeText = 'Banned / Revoked';
+            actionButton = `<button class="row-action-btn row-action-reset" onclick="performReset('${lic.license_key}', this)">Unbind / Reset</button>`;
+          } else if (lic.status === 'expired') {
+            expired++;
+            badgeClass = 'expired';
+            badgeText = 'Expired';
+            actionButton = `<button class="row-action-btn row-action-revoke" onclick="triggerRevokeModal('${lic.license_key}')">Ban</button>
+                            <button class="row-action-btn row-action-reset" onclick="performReset('${lic.license_key}', this)" style="margin-left:6px">Reset</button>`;
+          } else {
+            active++;
+            badgeClass = 'active';
+            badgeText = 'Active';
+            actionButton = `<button class="row-action-btn row-action-revoke" onclick="triggerRevokeModal('${lic.license_key}')">Ban</button>`;
+          }
+
+          const expiryLabel = lic.expires_at === 'Never (Lifetime)' ? 'Never (Lifetime)' : new Date(lic.expires_at).toLocaleString();
+          
+          // Truncate / Mask key display
+          const prefix = lic.license_key.substring(0, 8);
+          const maskedKey = prefix + '-••••-••••';
+
+          const keyCellHtml = `
+            <div class="key-wrapper">
+              <span class="key-text" data-full="${escapeHtml(lic.license_key)}" data-masked="${escapeHtml(maskedKey)}">${escapeHtml(maskedKey)}</span>
+              <button class="eye-toggle-btn" onclick="toggleKeyVisibility(this)" aria-label="Toggle license key visibility">
+                <svg class="eye-icon-show" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon-hide" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          `;
+
+          return `<tr>
+            <td data-label="User" style="font-weight: 700;">${escapeHtml(lic.user_name)}</td>
+            <td data-label="Key">${keyCellHtml}</td>
+            <td data-label="Device" style="font-family: monospace; font-size:12px; color:var(--ink); opacity:0.8;">${escapeHtml(lic.device_id)}</td>
+            <td data-label="Status">
+              <span class="status-badge ${badgeClass}">${badgeText}</span>
+              <div style="font-size:11.5px; margin-top:5px; color:var(--ink); opacity:0.8; font-weight:600;">Expiry: ${expiryLabel}</div>
+            </td>
+            <td style="text-align: right; white-space: nowrap;">
+              ${actionButton}
+            </td>
+          </tr>`;
+        }).join('');
+
+        updateStats(total, active, expired, revoked);
+      } else {
+        list.innerHTML = `<tr><td colspan="5" class="table-empty-row" style="color:#b91c1c">${data.message || 'Unauthorized'}</td></tr>`;
+        updateStats(0, 0, 0, 0);
+      }
+    } catch (err) {
+      list.innerHTML = '<tr><td colspan="5" class="table-empty-row" style="color:#b91c1c">Network error while fetching database.</td></tr>';
+      updateStats(0, 0, 0, 0);
+    }
+  }
+
+  function updateStats(total, active, expired, revoked) {
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-active').textContent = active;
+    document.getElementById('stat-expired').textContent = expired;
+    document.getElementById('stat-revoked').textContent = revoked;
+  }
+
+  function triggerRevokeModal(key) {
+    pendingRevokeKey = key;
+    document.getElementById('confirmModal').style.display = 'flex';
+  }
+
+  document.getElementById('modalCancel').addEventListener('click', () => {
+    document.getElementById('confirmModal').style.display = 'none';
+    pendingRevokeKey = null;
+  });
+
+  document.getElementById('modalConfirm').addEventListener('click', async () => {
+    if (!pendingRevokeKey) return;
+    
+    const key = pendingRevokeKey;
+    pendingRevokeKey = null;
+    document.getElementById('confirmModal').style.display = 'none';
+
+    const password = getPassword();
+    clearBanner('active-banner');
+
+    try {
+      const response = await fetch('/api/admin/revoke', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          admin_password: password,
+          license_key: key,
+          action: 'revoke'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showBanner('active-banner', 'success', 'Key status updated to Banned. Binding access revoked.');
+        loadActiveLicenses();
+      } else {
+        showBanner('active-banner', 'error', data.message || 'Banning process failed.');
+      }
+    } catch (err) {
+      showBanner('active-banner', 'error', 'Network error occurred while updating status.');
+    }
+  });
+
+  async function performReset(key, btnElement) {
+    const password = getPassword();
+    clearBanner('active-banner');
+    
+    if (!confirm('Are you sure you want to unbind and reset this license key? This will clear its device fingerprint, allowing it to be used on another device.')) {
+      return;
+    }
+
+    if (btnElement) {
+      btnElement.disabled = true;
+      btnElement.textContent = 'Processing...';
+    }
+
+    try {
+      const response = await fetch('/api/admin/revoke', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          admin_password: password,
+          license_key: key,
+          action: 'reset'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showBanner('active-banner', 'success', 'Key reset successfully. Device binding cleared.');
+        loadActiveLicenses();
+      } else {
+        showBanner('active-banner', 'error', data.message || 'Reset action failed.');
+        if (btnElement) {
+          btnElement.disabled = false;
+          btnElement.textContent = 'Unbind / Reset';
+        }
+      }
+    } catch (err) {
+      showBanner('active-banner', 'error', 'Network error during unbinding.');
+      if (btnElement) {
+        btnElement.disabled = false;
+        btnElement.textContent = 'Unbind / Reset';
+      }
+    }
+  }
+
+  async function inspectKey() {
+    const password = getPassword();
+    const key = document.getElementById('inspectKeyInput').value.trim();
+    const box = document.getElementById('inspect-box');
+    
+    clearBanner('inspect-banner');
+    box.style.display = 'none';
+
+    if (!password) {
+      showBanner('inspect-banner', 'error', 'Please enter your Admin Key.');
+      return;
+    }
+    if (!key) {
+      showBanner('inspect-banner', 'error', 'Please paste a license key.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/decrypt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          admin_password: password,
+          license_key: key
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.result) {
+        const res = data.result;
+        
+        document.getElementById('ins-user').textContent = res.user_name || 'N/A';
+        document.getElementById('ins-duration').textContent = res.duration_minutes === 4294967295 
+          ? 'Lifetime (Never Expires)' 
+          : res.duration_minutes + ' minutes (~' + Math.round(res.duration_minutes / 60 / 24) + ' days)';
+        
+        const insStatus = document.getElementById('ins-status');
+        if (res.valid) {
+          insStatus.textContent = 'VALID SIGNATURE';
+          insStatus.style.color = 'var(--success)';
+        } else {
+          insStatus.textContent = 'CORRUPTED / TAMPERED';
+          insStatus.style.color = 'var(--error)';
+        }
+        
+        document.getElementById('ins-details').textContent = res.message || '-';
+        box.style.display = 'block';
+      } else {
+        showBanner('inspect-banner', 'error', data.message || 'Key inspection failed.');
+      }
+    } catch (err) {
+      showBanner('inspect-banner', 'error', 'Network error during check.');
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+</script>
+
+<style>
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+</body>
+</html>
