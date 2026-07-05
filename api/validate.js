@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { findLicenseKVKey, setKV, getLicensePrefix } = require('./_helpers');
 
 const SECRET_KEY = process.env.LICENSE_SECRET_KEY || 'my-super-secret-license-key-2026';
 
@@ -64,50 +65,11 @@ function decryptAndValidateLicense(keyStr, secretKey) {
   }
 }
 
-async function getKV(key) {
-  const url = process.env.KV_REST_API_URL || process.env.STORAGE_URL || process.env.KV_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.STORAGE_TOKEN || process.env.KV_TOKEN;
-  if (!url || !token) return null;
-
-  try {
-    const res = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.result;
-  } catch (e) {
-    console.error("KV Get error:", e);
-    return null;
-  }
-}
-
-async function setKV(key, value) {
-  const url = process.env.KV_REST_API_URL || process.env.STORAGE_URL || process.env.KV_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.STORAGE_TOKEN || process.env.KV_TOKEN;
-  if (!url || !token) return false;
-
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(['SET', key, value])
-    });
-    return res.ok;
-  } catch (e) {
-    console.error("KV Set error:", e);
-    return false;
-  }
-}
-
 module.exports = async (req, res) => {
   // CORS configuration
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, apikey, x-license-key, x-session-id');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, apikey, x-license-key, x-session-id, x-device-id');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -143,16 +105,17 @@ module.exports = async (req, res) => {
     let expiresAt = null;
 
     if (hasKV) {
-      const redisKey = `license_activation:${license_key}`;
-      const stateStr = await getKV(redisKey);
+      // Multi-tenant: search for the key across superadmin and all tenant prefixes
+      const found = await findLicenseKVKey(license_key);
       const now = Math.floor(Date.now() / 1000);
 
-      if (stateStr) {
+      if (found) {
+        // Key exists in KV (already activated)
         let state;
         try {
-          state = JSON.parse(stateStr);
+          state = JSON.parse(found.value);
         } catch (e) {
-          state = { device_id: stateStr, expires_at: null }; // legacy fallback
+          state = { device_id: found.value, expires_at: null }; // legacy fallback
         }
 
         if (state.revoked || state.status === 'revoked') {
@@ -184,6 +147,17 @@ module.exports = async (req, res) => {
         }
       } else {
         // First activation: bind to this device and compute expires_at from duration
+        // Check if there's a tenant reverse mapping to determine the correct KV prefix
+        const { getLicenseTenant } = require('./_helpers');
+        const tenantPrefix = await getLicenseTenant(license_key);
+        
+        let kvKey;
+        if (tenantPrefix) {
+          kvKey = `tenant:${tenantPrefix}:license_activation:${license_key}`;
+        } else {
+          kvKey = `license_activation:${license_key}`;
+        }
+
         let expiryTimestamp = null;
         if (decoded.duration_minutes !== 0xffffffff) {
           expiryTimestamp = now + (decoded.duration_minutes * 60);
@@ -195,7 +169,7 @@ module.exports = async (req, res) => {
           device_id: device_id || 'unknown',
           expires_at: expiryTimestamp
         };
-        await setKV(redisKey, JSON.stringify(state));
+        await setKV(kvKey, JSON.stringify(state));
       }
     } else {
       // Fallback if KV is not configured: expiry starts from validation/generation request

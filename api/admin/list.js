@@ -1,7 +1,7 @@
 const crypto = require('crypto');
+const { resolveAdmin, getLicensePrefix, getKV, listKVKeys } = require('../_helpers');
 
 const SECRET_KEY = process.env.LICENSE_SECRET_KEY || 'my-super-secret-license-key-2026';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '@Aa7177276';
 
 function decodeBase32(str) {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -62,52 +62,6 @@ function decryptAndValidateLicense(keyStr, secretKey) {
   }
 }
 
-async function listKVKeys() {
-  const url = process.env.KV_REST_API_URL || process.env.STORAGE_URL || process.env.KV_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.STORAGE_TOKEN || process.env.KV_TOKEN;
-  if (!url || !token) return [];
-
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(['KEYS', 'license_activation:*'])
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data.result) ? data.result : [];
-  } catch (e) {
-    console.error("KV Keys error:", e);
-    return [];
-  }
-}
-
-async function getKV(key) {
-  const url = process.env.KV_REST_API_URL || process.env.STORAGE_URL || process.env.KV_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.STORAGE_TOKEN || process.env.KV_TOKEN;
-  if (!url || !token) return null;
-
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(['GET', key])
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.result;
-  } catch (e) {
-    console.error("KV Get error:", e);
-    return null;
-  }
-}
-
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -123,16 +77,30 @@ module.exports = async (req, res) => {
 
   const { admin_password } = req.body;
 
-  if (!admin_password || admin_password !== ADMIN_PASSWORD) {
+  // Multi-tenant auth
+  const adminInfo = await resolveAdmin(admin_password);
+  if (!adminInfo) {
     return res.status(401).json({ success: false, message: 'Unauthorized: Incorrect Admin Password' });
   }
 
   try {
-    const keys = await listKVKeys();
+    let allKeys = [];
+
+    if (adminInfo.isSuperAdmin) {
+      // Superadmin sees ALL: own keys + all tenant keys
+      const superadminKeys = await listKVKeys('license_activation:*');
+      const tenantKeys = await listKVKeys('tenant:*:license_activation:*');
+      allKeys = [...superadminKeys, ...tenantKeys];
+    } else {
+      // Tenant admin sees only their own prefixed keys
+      const prefix = getLicensePrefix(adminInfo);
+      allKeys = await listKVKeys(`${prefix}*`);
+    }
+
     const list = [];
     const nowSec = Math.floor(Date.now() / 1000);
 
-    for (const key of keys) {
+    for (const key of allKeys) {
       const valStr = await getKV(key);
       if (!valStr) continue;
 
@@ -143,7 +111,17 @@ module.exports = async (req, res) => {
         state = { device_id: valStr, expires_at: null }; // fallback
       }
 
-      const licenseKey = key.replace('license_activation:', '');
+      // Extract the license key from the KV key
+      let licenseKey;
+      if (key.startsWith('tenant:')) {
+        // tenant:<prefix>:license_activation:<key>
+        const parts = key.split(':license_activation:');
+        licenseKey = parts[1] || key;
+      } else {
+        // license_activation:<key>
+        licenseKey = key.replace('license_activation:', '');
+      }
+
       const decoded = decryptAndValidateLicense(licenseKey, SECRET_KEY);
 
       let status = 'active';
@@ -153,13 +131,25 @@ module.exports = async (req, res) => {
         status = 'expired';
       }
 
+      // Determine tenant info for superadmin view
+      let tenantName = null;
+      if (adminInfo.isSuperAdmin) {
+        if (key.startsWith('tenant:')) {
+          const prefix = key.split(':')[1];
+          tenantName = prefix; // will be shown as tenant prefix
+        } else {
+          tenantName = 'You (Superadmin)';
+        }
+      }
+
       list.push({
         license_key: licenseKey,
         device_id: state.device_id || 'unknown',
         expires_at: state.expires_at ? new Date(state.expires_at * 1000).toISOString() : 'Never (Lifetime)',
         user_name: decoded.valid ? decoded.user_name : 'Unknown User',
         duration_minutes: decoded.valid ? decoded.duration_minutes : 0,
-        status: status
+        status: status,
+        tenant: tenantName
       });
     }
 

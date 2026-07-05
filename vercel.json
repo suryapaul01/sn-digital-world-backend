@@ -26,8 +26,24 @@
       "destination": "/api/admin/decrypt.js"
     },
     {
+      "source": "/api/access/create",
+      "destination": "/api/access/create.js"
+    },
+    {
+      "source": "/api/access/list",
+      "destination": "/api/access/list.js"
+    },
+    {
+      "source": "/api/access/manage",
+      "destination": "/api/access/manage.js"
+    },
+    {
       "source": "/admin.html",
       "destination": "/admin.html"
+    },
+    {
+      "source": "/access.html",
+      "destination": "/access.html"
     },
     {
       "source": "/api/(.*)",

@@ -1,7 +1,7 @@
 const crypto = require('crypto');
+const { resolveAdmin, getLicensePrefix, setKV, setLicenseTenant } = require('../_helpers');
 
 const SECRET_KEY = process.env.LICENSE_SECRET_KEY || 'my-super-secret-license-key-2026';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '@Aa7177276';
 
 function encodeBase32(buffer) {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -66,7 +66,9 @@ module.exports = async (req, res) => {
 
   const { admin_password, user_name, time_limit } = req.body;
 
-  if (!admin_password || admin_password !== ADMIN_PASSWORD) {
+  // Multi-tenant auth: check superadmin OR tenant admin
+  const adminInfo = await resolveAdmin(admin_password);
+  if (!adminInfo) {
     return res.status(401).json({ success: false, message: 'Unauthorized: Incorrect Admin Password' });
   }
 
@@ -111,6 +113,11 @@ module.exports = async (req, res) => {
 
     const base32Str = encodeBase32(encrypted);
     const formattedKey = formatBrandedKey(base32Str);
+
+    // Store reverse mapping for tenant admins (so validate.js can find the key)
+    if (!adminInfo.isSuperAdmin) {
+      await setLicenseTenant(formattedKey, adminInfo.prefix);
+    }
 
     return res.status(200).json({
       success: true,

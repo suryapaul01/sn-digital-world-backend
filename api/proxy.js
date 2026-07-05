@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { findLicenseKVKey } = require('./_helpers');
 
 const SECRET_KEY = process.env.LICENSE_SECRET_KEY || 'my-super-secret-license-key-2026';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://your-original-supabase-url.supabase.co';
@@ -66,29 +67,11 @@ function decryptAndValidateLicense(keyStr, secretKey) {
   }
 }
 
-async function getKV(key) {
-  const url = process.env.KV_REST_API_URL || process.env.STORAGE_URL || process.env.KV_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.STORAGE_TOKEN || process.env.KV_TOKEN;
-  if (!url || !token) return null;
-
-  try {
-    const res = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.result;
-  } catch (e) {
-    console.error("KV Get error:", e);
-    return null;
-  }
-}
-
 module.exports = async (req, res) => {
   // CORS configuration
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, apikey, x-license-key, x-session-id');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, apikey, x-license-key, x-session-id, x-device-id');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -117,15 +100,15 @@ module.exports = async (req, res) => {
                   (process.env.KV_URL && process.env.KV_TOKEN);
 
     if (hasKV) {
-      const redisKey = `license_activation:${licenseKey}`;
-      const stateStr = await getKV(redisKey);
+      // Multi-tenant: search across superadmin and all tenant prefixes
+      const found = await findLicenseKVKey(licenseKey);
       
-      if (stateStr) {
+      if (found) {
         let state;
         try {
-          state = JSON.parse(stateStr);
+          state = JSON.parse(found.value);
         } catch (e) {
-          state = { device_id: stateStr, expires_at: null };
+          state = { device_id: found.value, expires_at: null };
         }
 
         if (state.revoked || state.status === 'revoked') {

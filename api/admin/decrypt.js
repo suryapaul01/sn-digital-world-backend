@@ -1,7 +1,7 @@
 const crypto = require('crypto');
+const { resolveAdmin } = require('../_helpers');
 
 const SECRET_KEY = process.env.LICENSE_SECRET_KEY || 'my-super-secret-license-key-2026';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '@Aa7177276';
 
 function decodeBase32(str) {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -77,7 +77,9 @@ module.exports = async (req, res) => {
 
   const { admin_password, license_key } = req.body;
 
-  if (!admin_password || admin_password !== ADMIN_PASSWORD) {
+  // Multi-tenant auth: any valid admin (super or tenant) can inspect keys
+  const adminInfo = await resolveAdmin(admin_password);
+  if (!adminInfo) {
     return res.status(401).json({ success: false, message: 'Unauthorized: Incorrect Admin Password' });
   }
 

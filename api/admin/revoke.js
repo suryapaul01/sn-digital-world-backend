@@ -1,46 +1,4 @@
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '@Aa7177276';
-
-async function setKV(key, value) {
-  const url = process.env.KV_REST_API_URL || process.env.STORAGE_URL || process.env.KV_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.STORAGE_TOKEN || process.env.KV_TOKEN;
-  if (!url || !token) return false;
-
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(['SET', key, value])
-    });
-    return res.ok;
-  } catch (e) {
-    console.error("KV Set error:", e);
-    return false;
-  }
-}
-
-async function deleteKV(key) {
-  const url = process.env.KV_REST_API_URL || process.env.STORAGE_URL || process.env.KV_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.STORAGE_TOKEN || process.env.KV_TOKEN;
-  if (!url || !token) return false;
-
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(['DEL', key])
-    });
-    return res.ok;
-  } catch (e) {
-    console.error("KV Delete error:", e);
-    return false;
-  }
-}
+const { resolveAdmin, getLicensePrefix, getKV, setKV, deleteKV, findLicenseKVKey } = require('../_helpers');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -57,7 +15,9 @@ module.exports = async (req, res) => {
 
   const { admin_password, license_key, action } = req.body;
 
-  if (!admin_password || admin_password !== ADMIN_PASSWORD) {
+  // Multi-tenant auth
+  const adminInfo = await resolveAdmin(admin_password);
+  if (!adminInfo) {
     return res.status(401).json({ success: false, message: 'Unauthorized: Incorrect Admin Password' });
   }
 
@@ -66,7 +26,24 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const redisKey = `license_activation:${license_key}`;
+    // Find the license key in KV (could be superadmin or any tenant)
+    let redisKey;
+
+    if (adminInfo.isSuperAdmin) {
+      // Superadmin can operate on any key - find it wherever it is
+      const found = await findLicenseKVKey(license_key);
+      if (found) {
+        redisKey = found.kvKey;
+      } else {
+        // Key not activated yet, use superadmin prefix
+        redisKey = `license_activation:${license_key}`;
+      }
+    } else {
+      // Tenant admin can only operate on their own keys
+      const prefix = getLicensePrefix(adminInfo);
+      redisKey = `${prefix}${license_key}`;
+    }
+
     let success = false;
     let verb = 'revoked';
 
